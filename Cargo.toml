@@ -3,6 +3,7 @@ name = "f2"
 version = "0.1.0"
 authors = ["Naitik Shah <n@daaku.org>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
 base32 = "0.4"
