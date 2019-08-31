@@ -33,8 +33,8 @@ impl Account {
         let code = hmac.result().code();
         let offset = (code[code.len() - 1] & 0xf) as usize;
         let code = u32::from_be_bytes(code[offset..offset + 4].try_into()?)
-            & 0x7fffffff;
-        let code = (code as u64) % 10_u64.pow(self.digits.try_into()?);
+            & 0x7fff_ffff;
+        let code = u64::from(code) % 10_u64.pow(self.digits.try_into()?);
         Ok(format!("{:06}", code))
     }
 }
@@ -165,7 +165,7 @@ impl App {
             passwd_salt,
             message,
         })?;
-        File::create(&self.args.file)?.write(&message)?;
+        File::create(&self.args.file)?.write_all(&message)?;
         Ok(())
     }
 
