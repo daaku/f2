@@ -148,7 +148,7 @@ impl App {
         let sb = SecretBox::new(&key, CipherType::Salsa20)
             .expect("SecretBox creation");
         let message = sb.easy_unseal(&outer.message).ok_or_else(|| {
-            static_err("decryption failed: invalid password or corrupt file.")
+            static_err("Decryption failed: invalid password or corrupt file.")
         })?;
         self.accounts = serde_json::from_slice(&message)?;
         Ok(())
@@ -200,7 +200,7 @@ impl App {
                     let digits = digits.parse()?;
                     if digits != 6 || digits != 7 || digits != 8 {
                         return Err(static_err(
-                            "digits must be one of 6, 7 or 8",
+                            "Invalid digits: must be one of 6, 7 or 8.",
                         ));
                     }
                     digits
@@ -210,7 +210,9 @@ impl App {
                 base32::Alphabet::RFC4648 { padding: false },
                 &rprompt::prompt_reply_stdout("Key: ")?.to_ascii_uppercase(),
             )
-            .ok_or_else(|| static_err("invalid key"))?;
+            .ok_or_else(|| {
+                static_err("Invalid key: a valid key must be base32 encoded.")
+            })?;
             println!("Added {}.", name);
             self.accounts.push(Account { name, digits, key });
         }
