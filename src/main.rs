@@ -261,10 +261,14 @@ impl App {
     }
 }
 
-fn main() -> Result<()> {
-    App::new(
+fn main() {
+    let mut app = App::new(
         Args::from_args(),
-        rpassword::read_password_from_tty(Some("Password: "))?,
-    )
-    .run()
+        rpassword::read_password_from_tty(Some("Password: "))
+            .expect("to prompt for a password"),
+    );
+    if let Err(err) = app.run() {
+        eprintln!("{}", err);
+        std::process::exit(1);
+    }
 }
