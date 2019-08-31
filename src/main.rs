@@ -149,9 +149,9 @@ impl App {
         let key = scrypt_key(self.passwd.as_bytes(), &outer.passwd_salt)?;
         let sb = SecretBox::new(&key, CipherType::Salsa20)
             .expect("SecretBox creation");
-        let message = sb.easy_unseal(&outer.message).expect(
-            "unsealed message. this likely means the password is incorrect.",
-        );
+        let message = sb.easy_unseal(&outer.message).ok_or_else(|| {
+            static_err("decryption failed: invalid password or corrupt file.")
+        })?;
         self.accounts = serde_json::from_slice(&message)?;
         Ok(())
     }
@@ -160,7 +160,8 @@ impl App {
         self.accounts.sort_by(|a, b| a.name.cmp(&b.name));
         let passwd_salt = passwd_salt();
         let key = scrypt_key(self.passwd.as_bytes(), &passwd_salt)?;
-        let sb = SecretBox::new(&key, CipherType::Salsa20).unwrap();
+        let sb = SecretBox::new(&key, CipherType::Salsa20)
+            .expect("valid SecretBox creation");
         let message = sb.easy_seal(&serde_json::to_vec(&self.accounts)?);
         let message = serde_json::to_vec(&Outer {
             passwd_salt,
@@ -211,7 +212,7 @@ impl App {
                 base32::Alphabet::RFC4648 { padding: false },
                 &rprompt::prompt_reply_stdout("Key: ")?.to_ascii_uppercase(),
             )
-            .unwrap();
+            .ok_or_else(|| static_err("invalid key"))?;
             info!("Added {}.", name);
             self.accounts.push(Account { name, digits, key });
         }
