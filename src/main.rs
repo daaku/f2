@@ -84,10 +84,7 @@ enum Command {
 
 lazy_static! {
     static ref DEFAULT_FILE: String = {
-        format!(
-            "{}/.f2",
-            env::var("HOME").unwrap_or_else(|_| String::from("/Users/naitik"))
-        )
+        format!("{}/.f2", env::var("HOME").unwrap_or_else(|_| String::new()))
     };
     static ref SCRYPT_PARAMS: ScryptParams =
         ScryptParams::new(20, 8, 1).expect("valid scrypt params");
