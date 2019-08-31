@@ -1,7 +1,5 @@
 use hmac::{Hmac, Mac};
 use lazy_static::lazy_static;
-use log::info;
-use pretty_env_logger;
 use prettytable::{cell, row, Table};
 use rand::{thread_rng, Rng};
 use scrypt::{scrypt, ScryptParams};
@@ -213,7 +211,7 @@ impl App {
                 &rprompt::prompt_reply_stdout("Key: ")?.to_ascii_uppercase(),
             )
             .ok_or_else(|| static_err("invalid key"))?;
-            info!("Added {}.", name);
+            println!("Added {}.", name);
             self.accounts.push(Account { name, digits, key });
         }
         self.save()
@@ -262,7 +260,6 @@ impl App {
 }
 
 fn main() -> Result<()> {
-    pretty_env_logger::init();
     App::new(
         Args::from_args(),
         rpassword::read_password_from_tty(Some("Password: "))?,
