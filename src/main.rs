@@ -73,6 +73,9 @@ enum Command {
     #[structopt(name = "add", about = "Add new account.")]
     Add,
 
+    #[structopt(name = "rm", about = "Remove an account.")]
+    Rm,
+
     #[structopt(name = "passwd", about = "Change password.")]
     Passwd,
 
@@ -219,6 +222,23 @@ impl App {
         self.save()
     }
 
+    fn command_rm(&mut self) -> Result<()> {
+        let name = rprompt::prompt_reply_stdout("Name of account to remove: ")?;
+        if name.is_empty() {
+            return Ok(());
+        }
+        let index = self
+            .accounts
+            .iter()
+            .position(|a| a.name == name)
+            .ok_or_else(|| {
+                static_err("Account with given name was not found.")
+            })?;
+        println!("Removed {}.", name);
+        self.accounts.remove(index);
+        self.save()
+    }
+
     fn command_passwd(&mut self) -> Result<()> {
         self.passwd =
             rpassword::read_password_from_tty(Some("New Password: "))?;
@@ -255,6 +275,7 @@ impl App {
         match command {
             Command::List => self.command_list(),
             Command::Add => self.command_add(),
+            Command::Rm => self.command_rm(),
             Command::Passwd => self.command_passwd(),
             Command::Raw => self.command_raw(),
         }

@@ -7,6 +7,5 @@ codes. It stores them in an encrypted file.
 
 ## TODO
 
-- Ability to remove entry.
 - Password verification.
 - Better empty file handling.
