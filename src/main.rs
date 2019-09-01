@@ -291,7 +291,9 @@ impl App {
             .current_version(cargo_crate_version!())
             .build()?
             .update()?;
-        println!("Update status: `{}`!", status.version());
+        if status.updated() {
+            println!("Updated to {}.", status.version());
+        }
         Ok(())
     }
 
