@@ -283,6 +283,7 @@ impl App {
     }
 
     fn command_update(&mut self) -> Result<()> {
+        let old_exe = std::env::current_exe();
         let status = self_update::backends::github::Update::configure()
             .repo_owner("daaku")
             .repo_name("f2")
@@ -293,6 +294,17 @@ impl App {
             .update()?;
         if status.updated() {
             println!("Updated to {}.", status.version());
+            // temp workaround to ensure executable bit on updated binary
+            #[cfg(unix)]
+            {
+                if let Ok(path) = old_exe {
+                    use std::fs;
+                    use std::os::unix::fs::PermissionsExt;
+                    let mut perms = fs::metadata(&path)?.permissions();
+                    perms.set_mode(0o755);
+                    fs::set_permissions(&path, perms)?;
+                }
+            }
         }
         Ok(())
     }
