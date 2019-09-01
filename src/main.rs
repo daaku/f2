@@ -4,8 +4,9 @@ use prettytable::{cell, row, Table};
 use rand::{thread_rng, Rng};
 use scrypt::{scrypt, ScryptParams};
 use secretbox::{CipherType, SecretBox};
+use self_update::cargo_crate_version;
 use serde::Deserialize;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::Serialize;
 use sha1::Sha1;
 use std::convert::TryInto;
 use std::env;
@@ -81,6 +82,9 @@ enum Command {
 
     #[structopt(name = "raw", about = "List raw configuration.")]
     Raw,
+
+    #[structopt(name = "update", about = "Update to new release.")]
+    Update,
 }
 
 lazy_static! {
@@ -109,7 +113,7 @@ struct Args {
 #[derive(Debug)]
 struct App {
     args: Args,
-    passwd: String,
+    passwd: Option<String>,
     accounts: Vec<Account>,
 }
 
@@ -126,15 +130,17 @@ fn scrypt_key(passwd: &[u8], salt: &[u8]) -> Result<Vec<u8>> {
 }
 
 impl App {
-    fn new(args: Args, passwd: String) -> App {
+    fn new(args: Args) -> App {
         App {
             args,
-            passwd,
+            passwd: None,
             accounts: vec![],
         }
     }
 
     fn load(&mut self) -> Result<()> {
+        self.passwd =
+            Some(rpassword::read_password_from_tty(Some("Password: "))?);
         let file = match File::open(&self.args.file) {
             Ok(file) => file,
             Err(err) => {
@@ -147,7 +153,10 @@ impl App {
         };
         let reader = BufReader::new(file);
         let outer: Outer = serde_json::from_reader(reader)?;
-        let key = scrypt_key(self.passwd.as_bytes(), &outer.passwd_salt)?;
+        let key = scrypt_key(
+            self.passwd.as_ref().expect("password to be set").as_bytes(),
+            &outer.passwd_salt,
+        )?;
         let sb = SecretBox::new(&key, CipherType::Salsa20)
             .expect("SecretBox creation");
         let message = sb.easy_unseal(&outer.message).ok_or_else(|| {
@@ -160,7 +169,10 @@ impl App {
     fn save(&mut self) -> Result<()> {
         self.accounts.sort_by(|a, b| a.name.cmp(&b.name));
         let passwd_salt = passwd_salt();
-        let key = scrypt_key(self.passwd.as_bytes(), &passwd_salt)?;
+        let key = scrypt_key(
+            self.passwd.as_ref().expect("password to be set").as_bytes(),
+            &passwd_salt,
+        )?;
         let sb = SecretBox::new(&key, CipherType::Salsa20)
             .expect("valid SecretBox creation");
         let message = sb.easy_seal(&serde_json::to_vec(&self.accounts)?);
@@ -173,6 +185,7 @@ impl App {
     }
 
     fn command_list(&mut self) -> Result<()> {
+        self.load()?;
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() / 30;
         let mut table = Table::new();
         table.set_format(
@@ -189,6 +202,7 @@ impl App {
     }
 
     fn command_add(&mut self) -> Result<()> {
+        self.load()?;
         loop {
             let name = rprompt::prompt_reply_stdout("Name: ")?;
             if name.is_empty() {
@@ -223,6 +237,7 @@ impl App {
     }
 
     fn command_rm(&mut self) -> Result<()> {
+        self.load()?;
         let name = rprompt::prompt_reply_stdout("Name of account to remove: ")?;
         if name.is_empty() {
             return Ok(());
@@ -240,12 +255,14 @@ impl App {
     }
 
     fn command_passwd(&mut self) -> Result<()> {
+        self.load()?;
         self.passwd =
-            rpassword::read_password_from_tty(Some("New Password: "))?;
+            Some(rpassword::read_password_from_tty(Some("New Password: "))?);
         self.save()
     }
 
     fn command_raw(&mut self) -> Result<()> {
+        self.load()?;
         let mut table = Table::new();
         table.set_format(
             *prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE,
@@ -265,8 +282,20 @@ impl App {
         Ok(())
     }
 
+    fn command_update(&mut self) -> Result<()> {
+        let status = self_update::backends::github::Update::configure()
+            .repo_owner("daaku")
+            .repo_name("f2")
+            .bin_name("f2")
+            .show_download_progress(true)
+            .current_version(cargo_crate_version!())
+            .build()?
+            .update()?;
+        println!("Update status: `{}`!", status.version());
+        Ok(())
+    }
+
     fn run(&mut self) -> Result<()> {
-        self.load()?;
         let command = if let Some(command) = &self.args.command {
             command
         } else {
@@ -278,16 +307,13 @@ impl App {
             Command::Rm => self.command_rm(),
             Command::Passwd => self.command_passwd(),
             Command::Raw => self.command_raw(),
+            Command::Update => self.command_update(),
         }
     }
 }
 
 fn main() {
-    let mut app = App::new(
-        Args::from_args(),
-        rpassword::read_password_from_tty(Some("Password: "))
-            .expect("to prompt for a password"),
-    );
+    let mut app = App::new(Args::from_args());
     if let Err(err) = app.run() {
         eprintln!("{}", err);
         std::process::exit(1);
