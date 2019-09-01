@@ -8,17 +8,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
             artifact_name: f2
             asset_name: f2-linux-amd64
-          - os: windows-latest
-            artifact_name: f2.exe
-            asset_name: f2-windows-amd64.exe
           - os: macos-latest
             artifact_name: f2
             asset_name: f2-macos-amd64
+          - os: windows-latest
+            artifact_name: f2.exe
+            asset_name: f2-windows-amd64.exe
 
     steps:
     - uses: hecrj/setup-rust-action@v1-release
