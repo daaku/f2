@@ -305,6 +305,8 @@ impl App {
                     fs::set_permissions(&path, perms)?;
                 }
             }
+        } else {
+            println!("Already up-to-date.");
         }
         Ok(())
     }
