@@ -1,6 +1,6 @@
 [package]
 name = "f2"
-version = "1.0.7"
+version = "1.0.8"
 authors = ["Naitik Shah <n@daaku.org>"]
 edition = "2018"
 license = "MIT"
@@ -26,4 +26,4 @@ structopt = "0.3"
 structopt-derive = "0.3"
 
 [profile.release]
-debug = true
+lto = true
