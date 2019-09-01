@@ -241,7 +241,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "f2"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "base32 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "base64 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
