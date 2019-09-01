@@ -21,6 +21,9 @@ jobs:
             asset_name: f2-windows-amd64.exe
 
     steps:
+    - uses: hecrj/setup-rust-action@master
+      with:
+        rust-version: stable
     - uses: actions/checkout@v1
     - name: Build
       run: cargo build --release
