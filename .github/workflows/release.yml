@@ -18,7 +18,7 @@ jobs:
             asset_name: f2-x86_64-apple-darwin
           - os: windows-latest
             artifact_name: f2.exe
-            asset_name: f2-windows-amd64.exe
+            asset_name: f2-x86_64-pc-windows-msvc.exe
 
     steps:
     - uses: hecrj/setup-rust-action@master
