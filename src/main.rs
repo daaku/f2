@@ -128,6 +128,11 @@ fn scrypt_key(passwd: &[u8], salt: &[u8]) -> Result<Vec<u8>> {
     Ok(key)
 }
 
+enum Load {
+    Required,
+    Optional,
+}
+
 impl App {
     fn new(args: Args) -> App {
         App {
@@ -137,14 +142,17 @@ impl App {
         }
     }
 
-    fn load(&mut self) -> Result<()> {
-        self.passwd =
-            Some(rpassword::read_password_from_tty(Some("Password: "))?);
+    fn load(&mut self, mode: Load) -> Result<()> {
         let file = match File::open(&self.args.file) {
             Ok(file) => file,
             Err(err) => {
                 if err.kind() == std::io::ErrorKind::NotFound {
-                    return Ok(());
+                    match mode {
+                        Load::Optional => return Ok(()),
+                        Load::Required => {
+                            return Err(static_err("No data file found."))
+                        }
+                    }
                 } else {
                     return Err(err.into());
                 }
@@ -152,6 +160,8 @@ impl App {
         };
         let reader = BufReader::new(file);
         let outer: Outer = serde_json::from_reader(reader)?;
+        self.passwd =
+            Some(rpassword::read_password_from_tty(Some("Password: "))?);
         let key = scrypt_key(
             self.passwd.as_ref().expect("password to be set").as_bytes(),
             &outer.passwd_salt,
@@ -184,7 +194,7 @@ impl App {
     }
 
     fn command_list(&mut self) -> Result<()> {
-        self.load()?;
+        self.load(Load::Required)?;
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() / 30;
         let mut table = Table::new();
         table.set_format(
@@ -201,7 +211,22 @@ impl App {
     }
 
     fn command_add(&mut self) -> Result<()> {
-        self.load()?;
+        self.load(Load::Optional)?;
+
+        // first account scenario
+        if self.passwd.is_none() {
+            println!("Adding first account. Please configure your password.");
+            println!("Use as long a password as possible.");
+            let passwd =
+                rpassword::read_password_from_tty(Some("New Password: "))?;
+            let confirm =
+                rpassword::read_password_from_tty(Some("Confirm Password: "))?;
+            if passwd != confirm {
+                return Err(static_err("Password do not match!"));
+            }
+            self.passwd = Some(passwd);
+        }
+
         loop {
             let name = rprompt::prompt_reply_stdout("Name: ")?;
             if name.is_empty() {
@@ -236,7 +261,7 @@ impl App {
     }
 
     fn command_rm(&mut self) -> Result<()> {
-        self.load()?;
+        self.load(Load::Required)?;
         let name = rprompt::prompt_reply_stdout("Name of account to remove: ")?;
         if name.is_empty() {
             return Ok(());
@@ -254,14 +279,14 @@ impl App {
     }
 
     fn command_passwd(&mut self) -> Result<()> {
-        self.load()?;
+        self.load(Load::Required)?;
         self.passwd =
             Some(rpassword::read_password_from_tty(Some("New Password: "))?);
         self.save()
     }
 
     fn command_raw(&mut self) -> Result<()> {
-        self.load()?;
+        self.load(Load::Required)?;
         let mut table = Table::new();
         table.set_format(
             *prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE,
