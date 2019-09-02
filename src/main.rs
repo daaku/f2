@@ -9,9 +9,9 @@ use serde::Deserialize;
 use serde_derive::Serialize;
 use sha1::Sha1;
 use std::convert::TryInto;
-use std::env;
 use std::fs::File;
 use std::io::{BufReader, Write};
+use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use string_error::static_err;
 use structopt::StructOpt;
@@ -88,9 +88,8 @@ enum Command {
 }
 
 lazy_static! {
-    static ref DEFAULT_FILE: String = {
-        format!("{}/.f2", env::var("HOME").unwrap_or_else(|_| String::new()))
-    };
+    static ref DEFAULT_FILE: PathBuf =
+        dirs::home_dir().unwrap_or_default().join(".f2");
     static ref SCRYPT_PARAMS: ScryptParams =
         ScryptParams::new(20, 8, 1).expect("valid scrypt params");
 }
@@ -102,9 +101,9 @@ struct Args {
         long,
         short,
         help = "File containing the data.",
-        default_value = &DEFAULT_FILE,
+        default_value = DEFAULT_FILE.to_str().unwrap(),
     )]
-    file: String,
+    file: PathBuf,
 
     #[structopt(subcommand)]
     command: Option<Command>,

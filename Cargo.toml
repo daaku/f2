@@ -8,6 +8,7 @@ license = "MIT"
 [dependencies]
 base32 = "0.4"
 base64 = "0.10"
+dirs = "2.0"
 hmac = "0.7"
 lazy_static = "1.4"
 prettytable-rs = "0.8"
