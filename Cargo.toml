@@ -1,13 +1,13 @@
 [package]
 name = "f2"
-version = "1.0.15"
+version = "1.0.16"
 authors = ["Naitik Shah <n@daaku.org>"]
 edition = "2018"
 license = "MIT"
 
 [dependencies]
 base32 = "0.4"
-base64 = "0.11"
+base64 = "0.12"
 dirs = "2.0"
 hmac = "0.7"
 lazy_static = "1.4"
@@ -17,14 +17,14 @@ rpassword = "4.0"
 rprompt = "1.0"
 scrypt = "0.2"
 secretbox = "0.1"
-self_update = "0.8"
-serde = "1.0"
+self_update = "0.16"
+serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0"
 serde_json = "1.0"
 sha-1 = "0.8"
 string-error = "0.1"
 structopt = "0.3"
-structopt-derive = "0.3"
+structopt-derive = "0.4"
 
 [profile.release]
 lto = true
