@@ -62,7 +62,7 @@ where
         .and_then(|s| base64::decode(&s).map_err(|err| Error::custom(err.to_string())))
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, Copy, Clone)]
 enum Command {
     /// List codes.
     List,
@@ -93,6 +93,15 @@ struct Args {
 
     #[structopt(subcommand)]
     command: Option<Command>,
+}
+
+impl Args {
+    fn command(&self) -> Command {
+        match self.command {
+            Some(c) => c,
+            None => Command::List,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -300,12 +309,7 @@ impl App {
     }
 
     fn run(&mut self) -> Result<()> {
-        let command = if let Some(command) = &self.args.command {
-            command
-        } else {
-            &Command::List
-        };
-        match command {
+        match self.args.command() {
             Command::List => self.command_list(),
             Command::Add => self.command_add(),
             Command::Rm => self.command_rm(),
