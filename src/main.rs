@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 use hmac::{Hmac, Mac};
 use lazy_static::lazy_static;
 use prettytable::{cell, row, Table};
@@ -13,10 +14,7 @@ use std::fs::File;
 use std::io::{BufReader, Write};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
-use string_error::static_err;
 use structopt::StructOpt;
-
-type Result<T, E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Account {
@@ -29,7 +27,7 @@ struct Account {
 impl Account {
     fn gen(&self, counter: u64) -> Result<String> {
         let mut hmac = Hmac::<Sha1>::new_varkey(self.key.as_slice())
-            .map_err(|_| static_err("invalid hmac key"))?;
+            .map_err(|_| anyhow!("invalid hmac key"))?;
         hmac.input(&counter.to_be_bytes());
         let code = hmac.result().code();
         let offset = (code[code.len() - 1] & 0xf) as usize;
@@ -146,7 +144,7 @@ impl App {
                 if err.kind() == std::io::ErrorKind::NotFound {
                     match mode {
                         Load::Optional => return Ok(()),
-                        Load::Required => return Err(static_err("No data file found.")),
+                        Load::Required => return Err(anyhow!("No data file found.")),
                     }
                 } else {
                     return Err(err.into());
@@ -163,7 +161,7 @@ impl App {
         let sb = SecretBox::new(&key, CipherType::Salsa20).expect("SecretBox creation");
         let message = sb
             .easy_unseal(&outer.message)
-            .ok_or_else(|| static_err("Decryption failed: invalid password or corrupt file."))?;
+            .ok_or_else(|| anyhow!("Decryption failed: invalid password or corrupt file."))?;
         self.accounts = serde_json::from_slice(&message)?;
         Ok(())
     }
@@ -210,7 +208,7 @@ impl App {
             let passwd = rpassword::read_password_from_tty(Some("New Password: "))?;
             let confirm = rpassword::read_password_from_tty(Some("Confirm Password: "))?;
             if passwd != confirm {
-                return Err(static_err("Password do not match!"));
+                return Err(anyhow!("Password do not match!"));
             }
             self.passwd = Some(passwd);
         }
@@ -227,7 +225,7 @@ impl App {
                 } else {
                     let digits = digits.parse()?;
                     if digits != 6 || digits != 7 || digits != 8 {
-                        return Err(static_err("Invalid digits: must be one of 6, 7 or 8."));
+                        return Err(anyhow!("Invalid digits: must be one of 6, 7 or 8."));
                     }
                     digits
                 }
@@ -236,7 +234,7 @@ impl App {
                 base32::Alphabet::RFC4648 { padding: false },
                 &rprompt::prompt_reply_stdout("Key: ")?.to_ascii_uppercase(),
             )
-            .ok_or_else(|| static_err("Invalid key: a valid key must be base32 encoded."))?;
+            .ok_or_else(|| anyhow!("Invalid key: a valid key must be base32 encoded."))?;
             println!("Added {}.", name);
             self.accounts.push(Account { name, digits, key });
         }
@@ -253,7 +251,7 @@ impl App {
             .accounts
             .iter()
             .position(|a| a.name == name)
-            .ok_or_else(|| static_err("Account with given name was not found."))?;
+            .ok_or_else(|| anyhow!("Account with given name was not found."))?;
         println!("Removed {}.", name);
         self.accounts.remove(index);
         self.save()
@@ -327,10 +325,6 @@ impl App {
     }
 }
 
-fn main() {
-    let mut app = App::new(Args::from_args());
-    if let Err(err) = app.run() {
-        eprintln!("{}", err);
-        std::process::exit(1);
-    }
+fn main() -> Result<()> {
+    App::new(Args::from_args()).run()
 }

@@ -6,6 +6,7 @@ edition = "2018"
 license = "MIT"
 
 [dependencies]
+anyhow = "1.0"
 base32 = "0.4"
 base64 = "0.12"
 dirs = "2.0"
@@ -22,7 +23,6 @@ serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0"
 serde_json = "1.0"
 sha-1 = "0.8"
-string-error = "0.1"
 structopt = "0.3"
 structopt-derive = "0.4"
 
