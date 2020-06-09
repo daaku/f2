@@ -97,7 +97,7 @@ lazy_static! {
 #[structopt(name = "f2")]
 struct Args {
     /// File containing the data.
-    #[structopt(default_value = DEFAULT_FILE.to_str().unwrap())]
+    #[structopt(short, long, default_value = DEFAULT_FILE.to_str().unwrap())]
     file: PathBuf,
 
     #[structopt(subcommand)]
