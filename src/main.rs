@@ -180,20 +180,21 @@ impl App {
     fn save(&mut self) -> Result<()> {
         self.accounts.sort_by(|a, b| a.name.cmp(&b.name));
         let passwd_salt = passwd_salt();
-        let key_raw = scrypt_key(
+        let key = scrypt_key(
             self.passwd.as_ref().expect("password to be set").as_bytes(),
             &passwd_salt,
         )?;
-        let key = GenericArray::from_slice(&key_raw);
-        let cipher = ChaCha20Poly1305::new(key);
-        let nonce_raw = nonce();
-        let nonce = GenericArray::from_slice(&nonce_raw);
+        let cipher = ChaCha20Poly1305::new(GenericArray::from_slice(&key));
+        let nonce = nonce();
         let message = cipher
-            .encrypt(nonce, serde_json::to_vec(&self.accounts)?.as_ref())
+            .encrypt(
+                GenericArray::from_slice(&nonce),
+                serde_json::to_vec(&self.accounts)?.as_ref(),
+            )
             .map_err(|_| anyhow!("encryption failure"))?;
         let message = serde_json::to_vec(&Outer {
             passwd_salt,
-            nonce: nonce_raw,
+            nonce,
             message,
         })?;
         File::create(&self.args.file)?.write_all(&message)?;
