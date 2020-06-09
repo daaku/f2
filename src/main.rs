@@ -259,7 +259,12 @@ impl App {
 
     fn command_passwd(&mut self) -> Result<()> {
         self.load(Load::Required)?;
-        self.passwd = Some(rpassword::read_password_from_tty(Some("New Password: "))?);
+        let passwd = rpassword::read_password_from_tty(Some("New Password: "))?;
+        let confirm = rpassword::read_password_from_tty(Some("Confirm Password: "))?;
+        if passwd != confirm {
+            return Err(anyhow!("Password do not match!"));
+        }
+        self.passwd = Some(passwd);
         self.save()
     }
 
