@@ -79,7 +79,7 @@ enum Command {
 }
 
 lazy_static! {
-    static ref DEFAULT_FILE: PathBuf = dirs::home_dir().unwrap_or_default().join(".f2");
+    static ref DEFAULT_FILE: PathBuf = dirs_next::home_dir().unwrap_or_default().join(".f2");
     static ref SCRYPT_PARAMS: ScryptParams =
         ScryptParams::new(20, 8, 1).expect("valid scrypt params");
 }
