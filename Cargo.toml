@@ -1,6 +1,6 @@
 [package]
 name = "f2"
-version = "2.0.3"
+version = "2.1.0"
 authors = ["Naitik Shah <n@daaku.org>"]
 edition = "2018"
 license = "MIT"
@@ -10,6 +10,7 @@ anyhow = "1.0"
 base32 = "0.4"
 base64 = "0.12"
 chacha20poly1305 = "0.5"
+csv = "1.1"
 dirs-next = "1.0"
 hmac = "0.7"
 lazy_static = "1.4"

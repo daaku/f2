@@ -71,7 +71,7 @@ where
         .and_then(|s| base64::decode(&s).map_err(|err| Error::custom(err.to_string())))
 }
 
-#[derive(StructOpt, Debug, Copy, Clone)]
+#[derive(StructOpt, Debug, Clone)]
 enum Command {
     /// List codes.
     List,
@@ -85,6 +85,10 @@ enum Command {
     Raw,
     /// Update to new release.
     Update,
+    /// Import data.
+    Import { filename: String },
+    /// Export data.
+    Export { filename: String },
 }
 
 lazy_static! {
@@ -104,18 +108,9 @@ struct Args {
     command: Option<Command>,
 }
 
-impl Args {
-    fn command(&self) -> Command {
-        match self.command {
-            Some(c) => c,
-            None => Command::List,
-        }
-    }
-}
-
 #[derive(Debug)]
 struct App {
-    args: Args,
+    file: PathBuf,
     passwd: Option<String>,
     accounts: Vec<Account>,
 }
@@ -132,16 +127,8 @@ enum Load {
 }
 
 impl App {
-    fn new(args: Args) -> App {
-        App {
-            args,
-            passwd: None,
-            accounts: vec![],
-        }
-    }
-
     fn load(&mut self, mode: Load) -> Result<()> {
-        let file = match File::open(&self.args.file) {
+        let file = match File::open(&self.file) {
             Ok(file) => file,
             Err(err) => {
                 if err.kind() == std::io::ErrorKind::NotFound {
@@ -171,6 +158,20 @@ impl App {
         Ok(())
     }
 
+    fn ensure_passwd_for_add(&mut self) -> Result<()> {
+        if self.passwd.is_none() {
+            println!("Adding first account. Please configure your password.");
+            println!("Use as long a password as possible.");
+            let passwd = rpassword::read_password_from_tty(Some("New Password: "))?;
+            let confirm = rpassword::read_password_from_tty(Some("Confirm Password: "))?;
+            if passwd != confirm {
+                return Err(anyhow!("Password do not match!"));
+            }
+            self.passwd = Some(passwd);
+        }
+        Ok(())
+    }
+
     fn save(&mut self) -> Result<()> {
         self.accounts.sort_by(|a, b| a.name.cmp(&b.name));
         let passwd_salt = rand_bytes(24);
@@ -191,7 +192,7 @@ impl App {
             nonce,
             message,
         })?;
-        File::create(&self.args.file)?.write_all(&message)?;
+        File::create(&self.file)?.write_all(&message)?;
         Ok(())
     }
 
@@ -212,18 +213,7 @@ impl App {
 
     fn command_add(&mut self) -> Result<()> {
         self.load(Load::Optional)?;
-
-        // first account scenario
-        if self.passwd.is_none() {
-            println!("Adding first account. Please configure your password.");
-            println!("Use as long a password as possible.");
-            let passwd = rpassword::read_password_from_tty(Some("New Password: "))?;
-            let confirm = rpassword::read_password_from_tty(Some("Confirm Password: "))?;
-            if passwd != confirm {
-                return Err(anyhow!("Password do not match!"));
-            }
-            self.passwd = Some(passwd);
-        }
+        self.ensure_passwd_for_add()?;
 
         loop {
             let name = rprompt::prompt_reply_stdout("Name: ")?;
@@ -296,6 +286,47 @@ impl App {
         Ok(())
     }
 
+    fn command_import(&mut self, filename: &str) -> Result<()> {
+        self.load(Load::Optional)?;
+        self.ensure_passwd_for_add()?;
+        let mut added = 0;
+        let file = File::open(filename)?;
+        let mut rdr = csv::ReaderBuilder::new()
+            .has_headers(false)
+            .from_reader(file);
+        for result in rdr.records() {
+            let record = result?;
+            let name = record[0].to_owned();
+            let digits = record[1].parse()?;
+            let key = base32::decode(
+                base32::Alphabet::RFC4648 { padding: false },
+                &record[2].to_ascii_uppercase(),
+            )
+            .ok_or_else(|| {
+                anyhow!(
+                    "Invalid key for {}: a valid key must be base32 encoded.",
+                    name
+                )
+            })?;
+            self.accounts.push(Account { name, digits, key });
+            added += 1;
+        }
+        println!("Importing {} entries.", added);
+        self.save()
+    }
+
+    fn command_export(&mut self, filename: &str) -> Result<()> {
+        self.load(Load::Required)?;
+        let file = File::create(filename)?;
+        let mut wtr = csv::Writer::from_writer(file);
+        for a in &self.accounts {
+            let key = base32::encode(base32::Alphabet::RFC4648 { padding: false }, &a.key);
+            wtr.write_record(&[&a.name, &format!("{}", a.digits), &key])?;
+        }
+        wtr.flush()?;
+        Ok(())
+    }
+
     fn command_update(&mut self) -> Result<()> {
         let old_exe = std::env::current_exe();
         let status = self_update::backends::github::Update::configure()
@@ -325,18 +356,26 @@ impl App {
         Ok(())
     }
 
-    fn run(&mut self) -> Result<()> {
-        match self.args.command() {
+    fn run(&mut self, cmd: Command) -> Result<()> {
+        match cmd {
             Command::List => self.command_list(),
             Command::Add => self.command_add(),
             Command::Rm => self.command_rm(),
             Command::Passwd => self.command_passwd(),
             Command::Raw => self.command_raw(),
+            Command::Import { filename } => self.command_import(&filename),
+            Command::Export { filename } => self.command_export(&filename),
             Command::Update => self.command_update(),
         }
     }
 }
 
 fn main() -> Result<()> {
-    App::new(Args::from_args()).run()
+    let args = Args::from_args();
+    App {
+        file: args.file,
+        passwd: None,
+        accounts: vec![],
+    }
+    .run(args.command.unwrap_or(Command::List))
 }
