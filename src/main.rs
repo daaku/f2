@@ -1,10 +1,11 @@
 use anyhow::{anyhow, Result};
+use chacha20poly1305::aead::{generic_array::GenericArray, Aead, NewAead};
+use chacha20poly1305::ChaCha20Poly1305;
 use hmac::{Hmac, Mac};
 use lazy_static::lazy_static;
 use prettytable::{cell, row, Table};
 use rand::{thread_rng, Rng};
 use scrypt::{scrypt, ScryptParams};
-use secretbox::{CipherType, SecretBox};
 use self_update::cargo_crate_version;
 use serde::Deserialize;
 use serde_derive::Serialize;
@@ -41,6 +42,8 @@ impl Account {
 struct Outer {
     #[serde(serialize_with = "as_base64", deserialize_with = "from_base64")]
     passwd_salt: Vec<u8>,
+    #[serde(serialize_with = "as_base64", deserialize_with = "from_base64")]
+    nonce: Vec<u8>,
     #[serde(serialize_with = "as_base64", deserialize_with = "from_base64")]
     message: Vec<u8>,
 }
@@ -117,6 +120,12 @@ fn passwd_salt() -> Vec<u8> {
     v
 }
 
+fn nonce() -> Vec<u8> {
+    let mut v = vec![0; 12];
+    thread_rng().fill(v.as_mut_slice());
+    v
+}
+
 fn scrypt_key(passwd: &[u8], salt: &[u8]) -> Result<Vec<u8>> {
     let mut key = vec![0; 32];
     scrypt(passwd, salt, &SCRYPT_PARAMS, &mut key)?;
@@ -158,10 +167,12 @@ impl App {
             self.passwd.as_ref().expect("password to be set").as_bytes(),
             &outer.passwd_salt,
         )?;
-        let sb = SecretBox::new(&key, CipherType::Salsa20).expect("SecretBox creation");
-        let message = sb
-            .easy_unseal(&outer.message)
-            .ok_or_else(|| anyhow!("Decryption failed: invalid password or corrupt file."))?;
+        let key = GenericArray::from_slice(&key);
+        let cipher = ChaCha20Poly1305::new(key);
+        let nonce = GenericArray::from_slice(&outer.nonce);
+        let message = cipher
+            .decrypt(nonce, outer.message.as_ref())
+            .map_err(|_| anyhow!("Decryption failed: invalid password or corrupt file."))?;
         self.accounts = serde_json::from_slice(&message)?;
         Ok(())
     }
@@ -169,14 +180,20 @@ impl App {
     fn save(&mut self) -> Result<()> {
         self.accounts.sort_by(|a, b| a.name.cmp(&b.name));
         let passwd_salt = passwd_salt();
-        let key = scrypt_key(
+        let key_raw = scrypt_key(
             self.passwd.as_ref().expect("password to be set").as_bytes(),
             &passwd_salt,
         )?;
-        let sb = SecretBox::new(&key, CipherType::Salsa20).expect("valid SecretBox creation");
-        let message = sb.easy_seal(&serde_json::to_vec(&self.accounts)?);
+        let key = GenericArray::from_slice(&key_raw);
+        let cipher = ChaCha20Poly1305::new(key);
+        let nonce_raw = nonce();
+        let nonce = GenericArray::from_slice(&nonce_raw);
+        let message = cipher
+            .encrypt(nonce, serde_json::to_vec(&self.accounts)?.as_ref())
+            .map_err(|_| anyhow!("encryption failure"))?;
         let message = serde_json::to_vec(&Outer {
             passwd_salt,
+            nonce: nonce_raw,
             message,
         })?;
         File::create(&self.args.file)?.write_all(&message)?;
