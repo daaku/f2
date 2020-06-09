@@ -18,7 +18,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use structopt::StructOpt;
 
 fn rand_bytes(capacity: usize) -> Vec<u8> {
-    let mut v = Vec::with_capacity(capacity);
+    let mut v = vec![0; capacity];
     thread_rng().fill(v.as_mut_slice());
     v
 }
