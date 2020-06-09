@@ -17,6 +17,16 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use structopt::StructOpt;
 
+macro_rules! rand_bytes {
+    ($x:literal) => {
+        {
+            let mut v = vec![0; $x];
+            thread_rng().fill(v.as_mut_slice());
+            v
+        }
+    };
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 struct Account {
     name: String,
@@ -114,18 +124,6 @@ struct App {
     accounts: Vec<Account>,
 }
 
-fn passwd_salt() -> Vec<u8> {
-    let mut v = vec![0; 24];
-    thread_rng().fill(v.as_mut_slice());
-    v
-}
-
-fn nonce() -> Vec<u8> {
-    let mut v = vec![0; 12];
-    thread_rng().fill(v.as_mut_slice());
-    v
-}
-
 fn scrypt_key(passwd: &[u8], salt: &[u8]) -> Result<Vec<u8>> {
     let mut key = vec![0; 32];
     scrypt(passwd, salt, &SCRYPT_PARAMS, &mut key)?;
@@ -179,13 +177,13 @@ impl App {
 
     fn save(&mut self) -> Result<()> {
         self.accounts.sort_by(|a, b| a.name.cmp(&b.name));
-        let passwd_salt = passwd_salt();
+        let passwd_salt = rand_bytes!(24);
         let key = scrypt_key(
             self.passwd.as_ref().expect("password to be set").as_bytes(),
             &passwd_salt,
         )?;
         let cipher = ChaCha20Poly1305::new(GenericArray::from_slice(&key));
-        let nonce = nonce();
+        let nonce = rand_bytes!(12);
         let message = cipher
             .encrypt(
                 GenericArray::from_slice(&nonce),
