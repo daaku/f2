@@ -64,22 +64,17 @@ where
 
 #[derive(StructOpt, Debug)]
 enum Command {
-    #[structopt(name = "list", about = "List codes.")]
+    /// List codes.
     List,
-
-    #[structopt(name = "add", about = "Add new account.")]
+    /// Add new account.
     Add,
-
-    #[structopt(name = "rm", about = "Remove an account.")]
+    /// Remove an account.
     Rm,
-
-    #[structopt(name = "passwd", about = "Change password.")]
+    /// Change password.
     Passwd,
-
-    #[structopt(name = "raw", about = "List raw configuration.")]
+    /// List raw configuration.
     Raw,
-
-    #[structopt(name = "update", about = "Update to new release.")]
+    /// Update to new release.
     Update,
 }
 
@@ -92,12 +87,8 @@ lazy_static! {
 #[derive(StructOpt, Debug)]
 #[structopt(name = "f2")]
 struct Args {
-    #[structopt(
-        long,
-        short,
-        help = "File containing the data.",
-        default_value = DEFAULT_FILE.to_str().unwrap(),
-    )]
+    /// File containing the data.
+    #[structopt(default_value = DEFAULT_FILE.to_str().unwrap())]
     file: PathBuf,
 
     #[structopt(subcommand)]
