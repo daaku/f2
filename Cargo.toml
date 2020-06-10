@@ -1,6 +1,6 @@
 [package]
 name = "f2"
-version = "2.1.0"
+version = "2.2.0"
 authors = ["Naitik Shah <n@daaku.org>"]
 edition = "2018"
 license = "MIT"
@@ -10,9 +10,10 @@ anyhow = "1.0"
 base32 = "0.4"
 base64 = "0.12"
 chacha20poly1305 = "0.5"
+crypto-mac = "0.8"
 csv = "1.1"
 dirs-next = "1.0"
-hmac = "0.7"
+hmac = "0.8"
 lazy_static = "1.4"
 prettytable-rs = "0.8"
 rand = "0.7"
@@ -23,7 +24,7 @@ self_update = "0.16"
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0"
 serde_json = "1.0"
-sha-1 = "0.8"
+sha-1 = "0.9"
 structopt = "0.3"
 structopt-derive = "0.4"
 

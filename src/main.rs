@@ -1,7 +1,8 @@
 use anyhow::{anyhow, Result};
 use chacha20poly1305::aead::{generic_array::GenericArray, Aead, NewAead};
 use chacha20poly1305::ChaCha20Poly1305;
-use hmac::{Hmac, Mac};
+use crypto_mac::{Mac, NewMac};
+use hmac::Hmac;
 use lazy_static::lazy_static;
 use prettytable::{cell, row, Table};
 use rand::{thread_rng, Rng};
@@ -35,8 +36,8 @@ impl Account {
     fn gen(&self, counter: u64) -> Result<String> {
         let mut hmac = Hmac::<Sha1>::new_varkey(self.key.as_slice())
             .map_err(|_| anyhow!("invalid hmac key"))?;
-        hmac.input(&counter.to_be_bytes());
-        let code = hmac.result().code();
+        hmac.update(&counter.to_be_bytes());
+        let code = hmac.finalize().into_bytes();
         let offset = (code[code.len() - 1] & 0xf) as usize;
         let code = u32::from_be_bytes(code[offset..offset + 4].try_into()?) & 0x7fff_ffff;
         let code = u64::from(code) % 10_u64.pow(self.digits.try_into()?);
