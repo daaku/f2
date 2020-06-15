@@ -1,6 +1,6 @@
 [package]
 name = "f2"
-version = "2.2.0"
+version = "2.3.0"
 authors = ["Naitik Shah <n@daaku.org>"]
 edition = "2018"
 license = "MIT"
@@ -19,7 +19,7 @@ prettytable-rs = "0.8"
 rand = "0.7"
 rpassword = "4.0"
 rprompt = "1.0"
-scrypt = "0.2"
+scrypt = "0.3"
 self_update = "0.16"
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0"
