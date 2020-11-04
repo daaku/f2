@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use chacha20poly1305::aead::{generic_array::GenericArray, Aead, NewAead};
 use chacha20poly1305::ChaCha20Poly1305;
 use crypto_mac::{Mac, NewMac};
@@ -135,7 +135,7 @@ impl App {
                 if err.kind() == std::io::ErrorKind::NotFound {
                     match mode {
                         Load::Optional => return Ok(()),
-                        Load::Required => return Err(anyhow!("No data file found.")),
+                        Load::Required => bail!("No data file found."),
                     }
                 } else {
                     return Err(err.into());
@@ -166,7 +166,7 @@ impl App {
             let passwd = rpassword::read_password_from_tty(Some("New Password: "))?;
             let confirm = rpassword::read_password_from_tty(Some("Confirm Password: "))?;
             if passwd != confirm {
-                return Err(anyhow!("Password do not match!"));
+                bail!("Passwords do not match!");
             }
             self.passwd = Some(passwd);
         }
@@ -228,7 +228,7 @@ impl App {
                 } else {
                     let digits = digits.parse()?;
                     if digits != 6 || digits != 7 || digits != 8 {
-                        return Err(anyhow!("Invalid digits: must be one of 6, 7 or 8."));
+                        bail!("Invalid digits: must be one of 6, 7 or 8.");
                     }
                     digits
                 }
@@ -265,7 +265,7 @@ impl App {
         let passwd = rpassword::read_password_from_tty(Some("New Password: "))?;
         let confirm = rpassword::read_password_from_tty(Some("Confirm Password: "))?;
         if passwd != confirm {
-            return Err(anyhow!("Password do not match!"));
+            bail!("Passwords do not match!");
         }
         self.passwd = Some(passwd);
         self.save()
