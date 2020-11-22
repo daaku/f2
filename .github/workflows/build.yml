@@ -1,0 +1,17 @@
+name: Build
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: hecrj/setup-rust-action@v1
+    - uses: actions/checkout@v1
+    - name: Build
+      run: cargo build
+    - name: Clippy
+      run: cargo clippy
+    - name: Test
+      run: cargo test
