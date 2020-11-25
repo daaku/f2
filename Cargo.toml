@@ -1,6 +1,6 @@
 [package]
 name = "f2"
-version = "2.4.1"
+version = "2.4.2"
 authors = ["Naitik Shah <n@daaku.org>"]
 edition = "2018"
 license = "MIT"
