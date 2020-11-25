@@ -27,7 +27,7 @@ fn rand_bytes(capacity: usize) -> Vec<u8> {
 struct Account {
     name: String,
     digits: i8,
-    #[serde(serialize_with = "as_base64", deserialize_with = "from_base64")]
+    #[serde(with = "SerdeB64")]
     key: Vec<u8>,
 }
 
@@ -46,29 +46,33 @@ impl Account {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Outer {
-    #[serde(serialize_with = "as_base64", deserialize_with = "from_base64")]
+    #[serde(with = "SerdeB64")]
     passwd_salt: Vec<u8>,
-    #[serde(serialize_with = "as_base64", deserialize_with = "from_base64")]
+    #[serde(with = "SerdeB64")]
     nonce: Vec<u8>,
-    #[serde(serialize_with = "as_base64", deserialize_with = "from_base64")]
+    #[serde(with = "SerdeB64")]
     message: Vec<u8>,
 }
 
-fn as_base64<T, S>(key: &T, serializer: S) -> Result<S::Ok, S::Error>
-where
-    T: AsRef<[u8]>,
-    S: serde::Serializer,
-{
-    serializer.serialize_str(&base64::encode(key.as_ref()))
-}
+struct SerdeB64;
 
-fn from_base64<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    use serde::de::Error;
-    String::deserialize(deserializer)
-        .and_then(|s| base64::decode(&s).map_err(|err| Error::custom(err.to_string())))
+impl SerdeB64 {
+    fn serialize<T, S>(key: &T, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        T: AsRef<[u8]>,
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&base64::encode(key.as_ref()))
+    }
+
+    fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+        String::deserialize(deserializer)
+            .and_then(|s| base64::decode(&s).map_err(|err| Error::custom(err.to_string())))
+    }
 }
 
 #[derive(StructOpt, Debug, Clone)]
