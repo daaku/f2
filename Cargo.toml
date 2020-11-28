@@ -1,6 +1,6 @@
 [package]
 name = "f2"
-version = "2.4.2"
+version = "2.5.0"
 authors = ["Naitik Shah <n@daaku.org>"]
 edition = "2018"
 license = "MIT"
@@ -16,6 +16,7 @@ dirs-next = "2.0"
 hmac = "0.10"
 lazy_static = "1.4"
 prettytable-rs = "0.8"
+qr2term = "0.2"
 rand = "0.7"
 rpassword = "5.0"
 rprompt = "1.0"

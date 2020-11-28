@@ -93,6 +93,8 @@ enum Command {
     Import { filename: String },
     /// Export data.
     Export { filename: String },
+    /// Render QR codes in the terminal.
+    QR { filter: String },
 }
 
 lazy_static! {
@@ -331,6 +333,21 @@ impl App {
         Ok(())
     }
 
+    fn command_qr(&mut self, filter: &str) -> Result<()> {
+        self.load(Load::Required)?;
+        self.accounts
+            .iter()
+            .filter(|a| a.name.contains(filter))
+            .for_each(|a| {
+                let key = base32::encode(base32::Alphabet::RFC4648 { padding: false }, &a.key);
+                let url = format!("otpauth://totp/{}?secret={}", a.name, key);
+                println!("{}", a.name);
+                qr2term::print_qr(url).expect("to be able to print to terminal");
+                println!("\n\n\n\n\n\n\n\n");
+            });
+        Ok(())
+    }
+
     fn command_update(&mut self) -> Result<()> {
         let status = self_update::backends::github::Update::configure()
             .repo_owner("daaku")
@@ -357,6 +374,7 @@ impl App {
             Command::Raw => self.command_raw(),
             Command::Import { filename } => self.command_import(&filename),
             Command::Export { filename } => self.command_export(&filename),
+            Command::QR { filter } => self.command_qr(&filter),
             Command::Update => self.command_update(),
         }
     }
