@@ -6,7 +6,6 @@ use hmac::Hmac;
 use lazy_static::lazy_static;
 use prettytable::{cell, row, Table};
 use rand::{thread_rng, Rng};
-use scrypt::{scrypt, ScryptParams};
 use self_update::cargo_crate_version;
 use serde::{Deserialize, Serialize};
 use sha1::Sha1;
@@ -99,8 +98,8 @@ enum Command {
 
 lazy_static! {
     static ref DEFAULT_FILE: PathBuf = dirs_next::home_dir().unwrap_or_default().join(".f2");
-    static ref SCRYPT_PARAMS: ScryptParams =
-        ScryptParams::new(20, 8, 1).expect("valid scrypt params");
+    static ref SCRYPT_PARAMS: scrypt::Params =
+        scrypt::Params::new(20, 8, 1).expect("valid scrypt params");
 }
 
 #[derive(StructOpt, Debug)]
@@ -123,7 +122,7 @@ struct App {
 
 fn scrypt_key(passwd: &[u8], salt: &[u8]) -> Result<Vec<u8>> {
     let mut key = vec![0; 32];
-    scrypt(passwd, salt, &SCRYPT_PARAMS, &mut key)?;
+    scrypt::scrypt(passwd, salt, &SCRYPT_PARAMS, &mut key)?;
     Ok(key)
 }
 

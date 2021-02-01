@@ -75,6 +75,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
+name = "base64ct"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b245b005bb8924f38647aeb31388984784a139acbe7ac6d7435fb0a11c4c83d8"
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -887,10 +893,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "pbkdf2"
-version = "0.6.0"
+name = "password-hash"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3b8c0d71734018084da0c0354193a5edfb81b20d2d57a92c5b154aefc554a4a"
+checksum = "ad35539a493c5a6c5b02fa3ac28ca380af704ec297a3c078d8beaa40d5849be4"
+dependencies = [
+ "base64ct",
+]
+
+[[package]]
+name = "pbkdf2"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca5c74683c467276ba17c4bb16e219487dc8fd4465b24d2653386e40de37dab6"
 dependencies = [
  "crypto-mac",
 ]
@@ -1297,18 +1312,16 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "scrypt"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8da492dab03f925d977776a0b7233d7b934d6dc2b94faead48928e2e9bacedb9"
+checksum = "1a7590317f2155937d67271b945fd467d99646ba9b5215a4598f183a1cba72f4"
 dependencies = [
- "base64",
+ "base64ct",
  "hmac",
+ "password-hash",
  "pbkdf2",
- "rand 0.7.3",
- "rand_core 0.5.1",
  "salsa20",
  "sha2",
- "subtle",
 ]
 
 [[package]]
