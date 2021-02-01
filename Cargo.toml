@@ -20,7 +20,7 @@ qr2term = "0.2"
 rand = "0.8"
 rpassword = "5.0"
 rprompt = "1.0"
-scrypt = "0.5"
+scrypt = "0.6"
 self_update = "0.23"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
