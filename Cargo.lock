@@ -81,6 +81,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b245b005bb8924f38647aeb31388984784a139acbe7ac6d7435fb0a11c4c83d8"
 
 [[package]]
+name = "base64ct"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22fb38fd6e62e4ceec8543db40ceb714454ff173451a0f2a6c8952fdf39a2d6c"
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -898,7 +904,7 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad35539a493c5a6c5b02fa3ac28ca380af704ec297a3c078d8beaa40d5849be4"
 dependencies = [
- "base64ct",
+ "base64ct 0.1.2",
 ]
 
 [[package]]
@@ -1312,11 +1318,11 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "scrypt"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a7590317f2155937d67271b945fd467d99646ba9b5215a4598f183a1cba72f4"
+checksum = "77b69b8e66ae973594f4f5c42e32b06cb4c32c070e682f6feceb30b83c3f3d5c"
 dependencies = [
- "base64ct",
+ "base64ct 0.2.0",
  "hmac",
  "password-hash",
  "pbkdf2",
