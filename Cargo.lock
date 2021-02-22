@@ -892,6 +892,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "721a49e14f1803441886c688ba8b653b52e1dcc926969081d22384e300ea4106"
 dependencies = [
  "base64ct",
+ "rand_core",
 ]
 
 [[package]]
@@ -1284,9 +1285,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "scrypt"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc92172b99814ff0b66ad8aca73619156a00a5bed5b441bf543123f2556987e0"
+checksum = "b14b541af4bb9dfd8bb3ca9b487e430103303421953402bc5b44d9c06e620829"
 dependencies = [
  "base64ct",
  "hmac",
