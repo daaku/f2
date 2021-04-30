@@ -32,7 +32,7 @@ struct Account {
 
 impl Account {
     fn gen(&self, counter: u64) -> Result<String> {
-        let mut hmac = Hmac::<Sha1>::new_varkey(self.key.as_slice())
+        let mut hmac = Hmac::<Sha1>::new_from_slice(self.key.as_slice())
             .map_err(|_| anyhow!("invalid hmac key"))?;
         hmac.update(&counter.to_be_bytes());
         let code = hmac.finalize().into_bytes();
