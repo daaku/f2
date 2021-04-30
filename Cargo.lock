@@ -404,7 +404,7 @@ dependencies = [
  "crypto-mac 0.10.0",
  "csv",
  "dirs-next",
- "hmac 0.10.1",
+ "hmac",
  "lazy_static",
  "prettytable-rs",
  "qr2term",
@@ -575,16 +575,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "322f4de77956e22ed0e5032c359a0f1273f1f7f0d79bfa3b8ffbc730d7fbcc5c"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "hmac"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1441c6b1e930e2817404b5046f1f989899143a12bf92de603b69f4e0aee1e15"
-dependencies = [
- "crypto-mac 0.10.0",
- "digest",
 ]
 
 [[package]]
@@ -1319,7 +1309,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "879588d8f90906e73302547e20fffefdd240eb3e0e744e142321f5d49dea0518"
 dependencies = [
  "base64ct",
- "hmac 0.11.0",
+ "hmac",
  "password-hash",
  "pbkdf2",
  "salsa20",
