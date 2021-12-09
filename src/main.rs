@@ -1,8 +1,7 @@
 use anyhow::{anyhow, bail, Result};
 use chacha20poly1305::aead::{generic_array::GenericArray, Aead, NewAead};
 use chacha20poly1305::ChaCha20Poly1305;
-use crypto_mac::{Mac, NewMac};
-use hmac::Hmac;
+use hmac::{Hmac, Mac};
 use lazy_static::lazy_static;
 use prettytable::{cell, row, Table};
 use rand::{thread_rng, Rng};
