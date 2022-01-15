@@ -1,6 +1,7 @@
 use anyhow::{anyhow, bail, Result};
 use chacha20poly1305::aead::{Aead, NewAead};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
+use clap::{Parser, Subcommand};
 use hmac::{Hmac, Mac};
 use lazy_static::lazy_static;
 use prettytable::{cell, row, Table};
@@ -13,7 +14,6 @@ use std::fs::File;
 use std::io::{BufReader, Write};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
-use structopt::StructOpt;
 
 fn rand_bytes(capacity: usize) -> Vec<u8> {
     let mut v = vec![0; capacity];
@@ -73,7 +73,7 @@ impl SerdeB64 {
     }
 }
 
-#[derive(StructOpt, Debug, Clone)]
+#[derive(Subcommand, Debug, Clone)]
 enum Command {
     /// List codes.
     List,
@@ -101,14 +101,14 @@ lazy_static! {
         scrypt::Params::new(20, 8, 1).expect("valid scrypt params");
 }
 
-#[derive(StructOpt, Debug)]
-#[structopt(name = "f2")]
+#[derive(Parser, Debug)]
+#[clap(name = "f2")]
 struct Args {
     /// File containing the data.
-    #[structopt(short, long, default_value = DEFAULT_FILE.to_str().unwrap())]
+    #[clap(short, long, default_value = DEFAULT_FILE.to_str().unwrap())]
     file: PathBuf,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     command: Option<Command>,
 }
 
@@ -379,7 +379,7 @@ impl App {
 }
 
 fn main() -> Result<()> {
-    let args = Args::from_args();
+    let args = Args::parse();
     App {
         file: args.file,
         passwd: None,
