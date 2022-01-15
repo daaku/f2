@@ -7,11 +7,15 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: hecrj/setup-rust-action@v1
-    - uses: actions/checkout@v2.4.0
-    - name: Build
-      run: cargo build
-    - name: Clippy
-      run: cargo clippy
-    - name: Test
-      run: cargo test
+      - uses: actions/checkout@v2.4.0
+      - uses: actions-rs/toolchain@v1.0.6
+        with:
+          toolchain: stable
+          profile: minimal
+          components: clippy
+      - name: Build
+        run: cargo build
+      - name: Clippy
+        run: cargo clippy
+      - name: Test
+        run: cargo test
