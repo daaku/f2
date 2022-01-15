@@ -241,7 +241,7 @@ impl App {
                 &rprompt::prompt_reply_stdout("Key: ")?.to_ascii_uppercase(),
             )
             .ok_or_else(|| anyhow!("Invalid key: a valid key must be base32 encoded."))?;
-            println!("Added {}.", name);
+            println!("Added {name}.");
             self.accounts.push(Account { name, digits, key });
         }
         self.save()
@@ -258,7 +258,7 @@ impl App {
             .iter()
             .position(|a| a.name == name)
             .ok_or_else(|| anyhow!("Account with given name was not found."))?;
-        println!("Removed {}.", name);
+        println!("Removed {name}.");
         self.accounts.remove(index);
         self.save()
     }
@@ -315,7 +315,7 @@ impl App {
             self.accounts.push(Account { name, digits, key });
             added += 1;
         }
-        println!("Importing {} entries.", added);
+        println!("Importing {added} entries.");
         self.save()
     }
 
