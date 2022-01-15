@@ -1,6 +1,6 @@
 use anyhow::{anyhow, bail, Result};
-use chacha20poly1305::aead::{generic_array::GenericArray, Aead, NewAead};
-use chacha20poly1305::ChaCha20Poly1305;
+use chacha20poly1305::aead::{Aead, NewAead};
+use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
 use hmac::{Hmac, Mac};
 use lazy_static::lazy_static;
 use prettytable::{cell, row, Table};
@@ -152,9 +152,9 @@ impl App {
             self.passwd.as_ref().expect("password to be set").as_bytes(),
             &outer.passwd_salt,
         )?;
-        let key = GenericArray::from_slice(&key);
+        let key = Key::from_slice(&key);
         let cipher = ChaCha20Poly1305::new(key);
-        let nonce = GenericArray::from_slice(&outer.nonce);
+        let nonce = Nonce::from_slice(&outer.nonce);
         let message = cipher
             .decrypt(nonce, outer.message.as_ref())
             .map_err(|_| anyhow!("Decryption failed: invalid password or corrupt file."))?;
@@ -183,11 +183,11 @@ impl App {
             self.passwd.as_ref().expect("password to be set").as_bytes(),
             &passwd_salt,
         )?;
-        let cipher = ChaCha20Poly1305::new(GenericArray::from_slice(&key));
+        let cipher = ChaCha20Poly1305::new(Key::from_slice(&key));
         let nonce = rand_bytes(12);
         let message = cipher
             .encrypt(
-                GenericArray::from_slice(&nonce),
+                Nonce::from_slice(&nonce),
                 serde_json::to_vec(&self.accounts)?.as_ref(),
             )
             .map_err(|_| anyhow!("encryption failure"))?;
