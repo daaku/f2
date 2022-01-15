@@ -38,7 +38,7 @@ impl Account {
         let offset = (code[code.len() - 1] & 0xf) as usize;
         let code = u32::from_be_bytes(code[offset..offset + 4].try_into()?) & 0x7fff_ffff;
         let code = u64::from(code) % 10_u64.pow(self.digits.try_into()?);
-        Ok(format!("{:06}", code))
+        Ok(format!("{code:06}"))
     }
 }
 
@@ -338,7 +338,7 @@ impl App {
             .filter(|a| a.name.contains(filter))
             .for_each(|a| {
                 let key = base32::encode(base32::Alphabet::RFC4648 { padding: false }, &a.key);
-                let url = format!("otpauth://totp/{}?secret={}", a.name, key);
+                let url = format!("otpauth://totp/{}?secret={key}", a.name);
                 println!("{}", a.name);
                 qr2term::print_qr(url).expect("to be able to print to terminal");
                 println!("\n\n\n\n\n\n\n\n");
