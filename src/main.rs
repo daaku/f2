@@ -147,7 +147,7 @@ impl App {
         };
         let reader = BufReader::new(file);
         let outer: Outer = serde_json::from_reader(reader)?;
-        self.passwd = Some(rpassword::read_password_from_tty(Some("Password: "))?);
+        self.passwd = Some(rpassword::prompt_password("Password: ")?);
         let key = scrypt_key(
             self.passwd.as_ref().expect("password to be set").as_bytes(),
             &outer.passwd_salt,
@@ -166,8 +166,8 @@ impl App {
         if self.passwd.is_none() {
             println!("Adding first account. Please configure your password.");
             println!("Use as long a password as possible.");
-            let passwd = rpassword::read_password_from_tty(Some("New Password: "))?;
-            let confirm = rpassword::read_password_from_tty(Some("Confirm Password: "))?;
+            let passwd = rpassword::prompt_password("New Password: ")?;
+            let confirm = rpassword::prompt_password("Confirm Password: ")?;
             if passwd != confirm {
                 bail!("Passwords do not match!");
             }
@@ -265,8 +265,8 @@ impl App {
 
     fn command_passwd(&mut self) -> Result<()> {
         self.load(Load::Required)?;
-        let passwd = rpassword::read_password_from_tty(Some("New Password: "))?;
-        let confirm = rpassword::read_password_from_tty(Some("Confirm Password: "))?;
+        let passwd = rpassword::prompt_password("New Password: ")?;
+        let confirm = rpassword::prompt_password("Confirm Password: ")?;
         if passwd != confirm {
             bail!("Passwords do not match!");
         }
