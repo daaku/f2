@@ -34,7 +34,7 @@ jobs:
         if: (contains(matrix.os, 'macos') || contains(matrix.os, 'ubuntu'))
         run: strip target/release/${{ matrix.artifact_name }}
       - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@2.2.1
+        uses: svenstaro/upload-release-action@2.3.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/${{ matrix.artifact_name }}
