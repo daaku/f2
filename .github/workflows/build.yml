@@ -1,21 +1,21 @@
 name: Build
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions/cache@v3
         with:
-          toolchain: stable
-          profile: minimal
-          components: clippy
-      - name: Build
-        run: cargo build
-      - name: Clippy
-        run: cargo clippy
-      - name: Test
-        run: cargo test
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+      - run: rustup toolchain install stable
+      - run: cargo build
+      - run: cargo clippy
+      - run: cargo test

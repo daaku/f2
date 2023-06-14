@@ -20,21 +20,15 @@ jobs:
           - os: windows-latest
             artifact_name: f2.exe
             asset_name: f2-x86_64-pc-windows-msvc.exe
-
     steps:
-      - uses: actions-rs/toolchain@v1.0.7
-        with:
-          toolchain: stable
-          profile: minimal
-          components: clippy
       - uses: actions/checkout@v3
-      - name: Build
-        run: cargo build --release
+      - run: rustup toolchain install stable
+      - run: cargo build --release
       - name: Strip
         if: (contains(matrix.os, 'macos') || contains(matrix.os, 'ubuntu'))
         run: strip target/release/${{ matrix.artifact_name }}
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@2.6.1
+      - name: Upload
+        uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/${{ matrix.artifact_name }}
