@@ -1,10 +1,11 @@
 use anyhow::{anyhow, bail, Result};
+use base64::prelude::{Engine as _, BASE64_STANDARD_NO_PAD};
 use chacha20poly1305::aead::{Aead, NewAead};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
 use clap::{Parser, Subcommand};
 use hmac::{Hmac, Mac};
 use lazy_static::lazy_static;
-use prettytable::{cell, row, Table};
+use prettytable::{row, Table};
 use rand::{thread_rng, Rng};
 use self_update::cargo_crate_version;
 use serde::{Deserialize, Serialize};
@@ -60,7 +61,7 @@ impl SerdeB64 {
         T: AsRef<[u8]>,
         S: serde::Serializer,
     {
-        serializer.serialize_str(&base64::encode(key.as_ref()))
+        serializer.serialize_str(&BASE64_STANDARD_NO_PAD.encode(key.as_ref()))
     }
 
     fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
@@ -68,8 +69,11 @@ impl SerdeB64 {
         D: serde::Deserializer<'de>,
     {
         use serde::de::Error;
-        String::deserialize(deserializer)
-            .and_then(|s| base64::decode(&s).map_err(|err| Error::custom(err.to_string())))
+        String::deserialize(deserializer).and_then(|s| {
+            BASE64_STANDARD_NO_PAD
+                .decode(s)
+                .map_err(|err| Error::custom(err.to_string()))
+        })
     }
 }
 
@@ -325,7 +329,7 @@ impl App {
         let mut wtr = csv::Writer::from_writer(file);
         for a in &self.accounts {
             let key = base32::encode(base32::Alphabet::RFC4648 { padding: false }, &a.key);
-            wtr.write_record(&[&a.name, &format!("{}", a.digits), &key])?;
+            wtr.write_record([&a.name, &format!("{}", a.digits), &key])?;
         }
         wtr.flush()?;
         Ok(())
