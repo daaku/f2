@@ -224,12 +224,12 @@ impl App {
         self.ensure_passwd_for_add()?;
 
         loop {
-            let name = rprompt::prompt_reply_stdout("Name: ")?;
+            let name = rprompt::prompt_reply("Name: ")?;
             if name.is_empty() {
                 break;
             }
             let digits = {
-                let digits = rprompt::prompt_reply_stdout("Digits (default 6): ")?;
+                let digits = rprompt::prompt_reply("Digits (default 6): ")?;
                 if digits.is_empty() {
                     6
                 } else {
@@ -242,7 +242,7 @@ impl App {
             };
             let key = base32::decode(
                 base32::Alphabet::RFC4648 { padding: false },
-                &rprompt::prompt_reply_stdout("Key: ")?.to_ascii_uppercase(),
+                &rprompt::prompt_reply("Key: ")?.to_ascii_uppercase(),
             )
             .ok_or_else(|| anyhow!("Invalid key: a valid key must be base32 encoded."))?;
             println!("Added {name}.");
@@ -253,7 +253,7 @@ impl App {
 
     fn command_rm(&mut self) -> Result<()> {
         self.load(Load::Required)?;
-        let name = rprompt::prompt_reply_stdout("Name of account to remove: ")?;
+        let name = rprompt::prompt_reply("Name of account to remove: ")?;
         if name.is_empty() {
             return Ok(());
         }
