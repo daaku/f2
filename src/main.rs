@@ -102,7 +102,7 @@ enum Command {
 lazy_static! {
     static ref DEFAULT_FILE: PathBuf = dirs_next::home_dir().unwrap_or_default().join(".f2");
     static ref SCRYPT_PARAMS: scrypt::Params =
-        scrypt::Params::new(20, 8, 1).expect("valid scrypt params");
+        scrypt::Params::new(20, 8, 1, 64).expect("valid scrypt params");
 }
 
 #[derive(Parser, Debug)]
