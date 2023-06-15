@@ -19,6 +19,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 fn rand_bytes(capacity: usize) -> Vec<u8> {
     let mut v = vec![0; capacity];
     thread_rng().fill(v.as_mut_slice());
+    assert!(v.iter().any(|&i| i != 0));
     v
 }
 
@@ -126,6 +127,7 @@ struct App {
 fn scrypt_key(passwd: &[u8], salt: &[u8]) -> Result<Vec<u8>> {
     let mut key = vec![0; 32];
     scrypt::scrypt(passwd, salt, &SCRYPT_PARAMS, &mut key)?;
+    assert!(key.iter().any(|&v| v != 0));
     Ok(key)
 }
 
