@@ -28,6 +28,8 @@ sha-1 = "0.10"
 
 [profile.release]
 lto = true
+opt-level = "s"
+strip = "symbols"
 
 [profile.dev.package."*"]
 opt-level = 3
