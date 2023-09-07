@@ -214,7 +214,8 @@ impl App {
         for a in &self.accounts {
             table.add_row(row![
                 b->a.name,
-                a.gen(now)?
+                a.gen(now)?,
+                a.gen(now+1)?,
             ]);
         }
         table.printstd();
