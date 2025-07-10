@@ -244,7 +244,7 @@ impl App {
                 }
             };
             let key = base32::decode(
-                base32::Alphabet::RFC4648 { padding: false },
+                base32::Alphabet::Rfc4648 { padding: false },
                 &rprompt::prompt_reply("Key: ")?.to_ascii_uppercase(),
             )
             .ok_or_else(|| anyhow!("Invalid key: a valid key must be base32 encoded."))?;
@@ -286,7 +286,7 @@ impl App {
         let mut table = Table::new();
         table.set_format(*prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
         for a in &self.accounts {
-            let key = base32::encode(base32::Alphabet::RFC4648 { padding: false }, &a.key);
+            let key = base32::encode(base32::Alphabet::Rfc4648 { padding: false }, &a.key);
             table.add_row(row![
                 b->a.name,
                 a.digits,
@@ -310,7 +310,7 @@ impl App {
             let name = record[0].to_owned();
             let digits = record[1].parse()?;
             let key = base32::decode(
-                base32::Alphabet::RFC4648 { padding: false },
+                base32::Alphabet::Rfc4648 { padding: false },
                 &record[2].to_ascii_uppercase(),
             )
             .ok_or_else(|| {
@@ -331,7 +331,7 @@ impl App {
         let file = File::create(filename)?;
         let mut wtr = csv::Writer::from_writer(file);
         for a in &self.accounts {
-            let key = base32::encode(base32::Alphabet::RFC4648 { padding: false }, &a.key);
+            let key = base32::encode(base32::Alphabet::Rfc4648 { padding: false }, &a.key);
             wtr.write_record([&a.name, &format!("{}", a.digits), &key])?;
         }
         wtr.flush()?;
@@ -344,7 +344,7 @@ impl App {
             .iter()
             .filter(|a| a.name.contains(filter))
             .for_each(|a| {
-                let key = base32::encode(base32::Alphabet::RFC4648 { padding: false }, &a.key);
+                let key = base32::encode(base32::Alphabet::Rfc4648 { padding: false }, &a.key);
                 let url = format!("otpauth://totp/{}?secret={key}", a.name);
                 println!("{}", a.name);
                 qr2term::print_qr(url).expect("to be able to print to terminal");
