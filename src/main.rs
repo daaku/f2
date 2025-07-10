@@ -1,12 +1,12 @@
 use anyhow::{anyhow, bail, Result};
 use base64::prelude::{Engine as _, BASE64_STANDARD_NO_PAD};
-use chacha20poly1305::aead::{Aead, NewAead};
+use chacha20poly1305::aead::{Aead, KeyInit};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
 use clap::{Parser, Subcommand};
 use hmac::{Hmac, Mac};
 use lazy_static::lazy_static;
 use prettytable::{row, Table};
-use rand::{thread_rng, Rng};
+use rand::{rng, Rng};
 use self_update::cargo_crate_version;
 use serde::{Deserialize, Serialize};
 use sha1::Sha1;
@@ -18,7 +18,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 fn rand_bytes(capacity: usize) -> Vec<u8> {
     let mut v = vec![0; capacity];
-    thread_rng().fill(v.as_mut_slice());
+    rng().fill(v.as_mut_slice());
     assert!(v.iter().any(|&i| i != 0));
     v
 }
@@ -33,8 +33,8 @@ struct Account {
 
 impl Account {
     fn gen(&self, counter: u64) -> Result<String> {
-        let mut hmac = Hmac::<Sha1>::new_from_slice(self.key.as_slice())
-            .map_err(|_| anyhow!("invalid hmac key"))?;
+        let mut hmac: Hmac<Sha1> =
+            Mac::new_from_slice(self.key.as_slice()).map_err(|_| anyhow!("invalid hmac key"))?;
         hmac.update(&counter.to_be_bytes());
         let code = hmac.finalize().into_bytes();
         let offset = (code[code.len() - 1] & 0xf) as usize;
