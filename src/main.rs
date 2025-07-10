@@ -210,7 +210,7 @@ impl App {
         self.load(Load::Required)?;
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() / 30;
         let mut table = Table::new();
-        table.set_format(*prettytable::format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+        table.set_format(*prettytable::format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
         for a in &self.accounts {
             table.add_row(row![
                 b->a.name,
