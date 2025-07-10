@@ -2,7 +2,7 @@
 name = "f2"
 version = "5.3.0"
 authors = ["Naitik Shah <n@daaku.org>"]
-edition = "2021"
+edition = "2024"
 license = "MIT"
 
 [dependencies]

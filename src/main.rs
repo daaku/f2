@@ -1,12 +1,12 @@
-use anyhow::{anyhow, bail, Result};
-use base64::prelude::{Engine as _, BASE64_STANDARD_NO_PAD};
+use anyhow::{Result, anyhow, bail};
+use base64::prelude::{BASE64_STANDARD_NO_PAD, Engine as _};
 use chacha20poly1305::aead::{Aead, KeyInit};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
 use clap::{Parser, Subcommand};
 use hmac::{Hmac, Mac};
 use lazy_static::lazy_static;
-use prettytable::{row, Table};
-use rand::{rng, Rng};
+use prettytable::{Table, row};
+use rand::{Rng, rng};
 use self_update::cargo_crate_version;
 use serde::{Deserialize, Serialize};
 use sha1::Sha1;
@@ -32,7 +32,7 @@ struct Account {
 }
 
 impl Account {
-    fn gen(&self, counter: u64) -> Result<String> {
+    fn code(&self, counter: u64) -> Result<String> {
         let mut hmac: Hmac<Sha1> =
             Mac::new_from_slice(self.key.as_slice()).map_err(|_| anyhow!("invalid hmac key"))?;
         hmac.update(&counter.to_be_bytes());
@@ -214,8 +214,8 @@ impl App {
         for a in &self.accounts {
             table.add_row(row![
                 b->a.name,
-                a.gen(now)?,
-                a.gen(now+1)?,
+                a.code(now)?,
+                a.code(now+1)?,
             ]);
         }
         table.printstd();
