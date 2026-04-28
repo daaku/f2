@@ -21,7 +21,7 @@ rand = "0.9"
 rpassword = "7.0"
 rprompt = "2.0"
 scrypt = "0.11"
-self_update = "0.42"
+self_update = "0.44"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha-1 = "0.10"
