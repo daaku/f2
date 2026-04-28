@@ -13,7 +13,7 @@ chacha20poly1305 = "0.10"
 clap = { version = "4.0", features = ["color", "derive", "cargo", "wrap_help"] }
 csv = "1.1"
 dirs-next = "2.0"
-hmac = "0.12"
+hmac = "0.13"
 lazy_static = "1.4"
 prettytable-rs = "0.10"
 qr2term = "0.3"
